@@ -62,15 +62,21 @@ var fakeGameInstance = &fakeGame{
 }
 
 func TestInsertGame(t *testing.T) {
-	game, err := InsertGame(db, fakeGameInstance)
+	trans, err := db.Begin()
+	assert.NoError(t, err)
+	defer trans.Rollback()
+	game, err := InsertGame(trans, fakeGameInstance)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, game.Id)
 }
 
 func TestLoadGame(t *testing.T) {
-	game, err := InsertGame(db, fakeGameInstance)
+	trans, err := db.Begin()
 	assert.NoError(t, err)
-	game2, ok, err := LoadGame(db, game.Id)
+	defer trans.Rollback()
+	game, err := InsertGame(trans, fakeGameInstance)
+	assert.NoError(t, err)
+	game2, ok, err := LoadGame(trans, game.Id)
 	assert.NoError(t, err)
 	assert.True(t, ok)
 	fakeGameInstance2 := &fakeGame{}
